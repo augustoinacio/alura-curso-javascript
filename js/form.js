@@ -3,17 +3,26 @@ botaoAdicionar.addEventListener("click", function(event) {
     event.preventDefault();
     console.log("Oi, cliquei no botão.");
     
-    var form= document.querySelector("#form-adiciona");
-    var paciente = obtemDadosDoForm(form);
+    var form = document.querySelector("#form-adiciona");
+    var paciente = obtemPacienteDoFormulario(form);
     
     var pacienteTr = montaTr(paciente);   
 
-    var tabela = document.querySelector("tabelaPacientes");
+    var erros = validaPaciente(paciente);
+
+    if(erros.length){
+        exibeMensagensDeErro(erros);
+        return;
+    }
+    var tabela = document.querySelector("#tabela-pacientes");
     tabela.appendChild(pacienteTr);
     form.reset();
+
+    var mensagensErro = document.querySelector("#mensagens-erro");
+    mensagensErro.innerHTML = "";
 });
 
-function obtemDadosDoForm(form){
+function obtemPacienteDoFormulario(form){
     var paciente = {
         nome: form.nome.value,
         peso: form.peso.value,
@@ -21,6 +30,21 @@ function obtemDadosDoForm(form){
         gordura: form.gordura.value,
         imc: calculaIMC(form.peso.value, form.altura.value)
     }
+    return paciente;
+}
+
+function montaTr(paciente){
+    var pacienteTr = document.createElement("tr");
+
+    pacienteTr.classList.add("paciente");
+
+    pacienteTr.appendChild(montaTd(paciente.nome, "info-nome"));
+    pacienteTr.appendChild(montaTd(paciente.peso, "info-peso"));
+    pacienteTr.appendChild(montaTd(paciente.altura, "info-altura"));
+    pacienteTr.appendChild(montaTd(paciente.gordura, "info-gordura"));
+    pacienteTr.appendChild(montaTd(paciente.imc, "info-imc"));
+    
+    return pacienteTr;
 }
 
 function montaTd(dado, classe){
@@ -32,16 +56,36 @@ function montaTd(dado, classe){
     return td;
 }
 
-function montaTr(paciente){
-    var pacienteTr = document.createElement("tr");
+function validaPaciente(paciente){
+    var erros = [];
+    if(!validaPeso(paciente.peso)){
+        erros.push("O Peso Inválido!");
+    }
+    if(!validaAltura(paciente.altura)){
+        erros.push("Altura Inválida!");
+    }
+    if(paciente.peso.length == 0 ){
+        erros.push("Informar um valor para o Peso.");
+    }
+    if(paciente.altura.length == 0){
+        erros.push("Informar um valor para o Altura.");
+    }
+    if(paciente.nome.length == 0){
+        erros.push("Informar um Nome para o Paciente.");
+    }
+    if(paciente.gordura.length == 0 || paciente.gordura <= 0 ){
+        erros.push("Informar um valor para gordura.");
+    }    
+    return erros;
+}
 
-    pacienteTr.classList.add("paciente");
-
-    pacienteTr.appendChild(montaTd(paciente.nome),"info-nome");
-    pacienteTr.appendChild(montaTd(paciente.peso, "info-peso"));
-    pacienteTr.appendChild(montaTd(paciente.altura, "info-altura"));
-    pacienteTr.appendChild(montaTd(paciente.gordura, "info-gordura"));
-    pacienteTr.appendChild(montaTd(paciente.imc, "info-imc"));
-    
-    return pacienteTr;
+function exibeMensagensDeErro(erros){
+    var ul = document.querySelector("#mensagens-erro");
+    ul.innerHTML = "";
+    erros.forEach(function(erro) {
+        var li = document.createElement("li");
+        li.textContent = erro;
+        li.classList.add("mensagem-erro")
+        ul.appendChild(li);
+    }, this);
 }
